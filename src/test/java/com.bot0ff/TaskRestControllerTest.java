@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.*;
+import org.springframework.test.annotation.Rollback;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
@@ -66,12 +67,12 @@ public class TaskRestControllerTest {
                         MockMvcResultMatchers.header().exists(HttpHeaders.LOCATION),
                         MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON),
                         MockMvcResultMatchers.content().json("""
-                                [
+                                
                                     {
                                         "details": "Третья задача",
                                         "completed": false
                                     }
-                                ]
+                                
                                 """
                         ),
                         MockMvcResultMatchers.jsonPath("$.id").exists()
@@ -79,11 +80,10 @@ public class TaskRestControllerTest {
     }
 
     @Test
-    void handleCreateNewTask_PayloadInvalid_ReturnsInvalidResponseEntity() throws Exception {
+    void handleCreateNewTask_PayloadIsInvalid_ReturnsValidResponseEntity() throws Exception {
         //given
         var requestBuilder = MockMvcRequestBuilders.post("/api/tasks")
                 .contentType(MediaType.APPLICATION_JSON)
-                .header(HttpHeaders.ACCEPT_LANGUAGE, "en")
                 .content("""
                           {
                               "details": null
@@ -98,11 +98,11 @@ public class TaskRestControllerTest {
                         MockMvcResultMatchers.header().doesNotExist(HttpHeaders.LOCATION),
                         MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON),
                         MockMvcResultMatchers.content().json("""
-                                [
+                                
                                     {
-                                        "errors": ["Task detals must be set"]
+                                        "errors": ["Описание задачи должно быть указано"]
                                     }
-                                ]
+                                
                                 """, true
                         )
                 );
