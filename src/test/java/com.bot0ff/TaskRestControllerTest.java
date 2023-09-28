@@ -1,101 +1,110 @@
 package com.bot0ff;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.context.MessageSource;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.web.util.UriComponentsBuilder;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.*;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
-import java.net.URI;
-import java.util.List;
-import java.util.Locale;
-import java.util.UUID;
-
-@ExtendWith(MockitoExtension.class)
+@SpringBootTest
+@AutoConfigureMockMvc(printOnlyOnFailure = false)
 public class TaskRestControllerTest {
 
-    @Mock
-    TaskRepository taskRepository;
-
-    @Mock
-    MessageSource messageSource;
-
-    @InjectMocks
-    TaskRestController taskRestController;
+    @Autowired
+    MockMvc mockMvc;
 
     @Test
-    void handleGetAllTask_ReturnsValidResponseEntity() {
+    void handleGetAllTask_ReturnsValidResponseEntity() throws Exception {
         //given
-        var tasks = List.of(new Task(UUID.randomUUID(),"Первая задача", false),
-                new Task(UUID.randomUUID(), "Вторая задача", false));
-        Mockito.doReturn(tasks).when(this.taskRepository).findAll();
+        var requestBuilder = MockMvcRequestBuilders.get("/api/tasks");
 
         //when
-        var responseEntity = this.taskRestController.handleGetAllTasks();
+        this.mockMvc.perform(requestBuilder)
+                //then
+                .andExpectAll(
+                        MockMvcResultMatchers.status().isOk(),
+                        MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON),
+                        MockMvcResultMatchers.content().json("""
+                                [
+                                    {
+                                        "id":"5fd1a7b4-5d61-11ee-8c99-0242ac120002",
+                                        "details":"Первая задача",
+                                        "completed":false
+                                    },
+                                    {
+                                        "id":"6c82123c-5d61-11ee-8c99-0242ac120002",
+                                        "details":"Вторая задача",
+                                        "completed":true
+                                    }
+                                ]
+                                """
+                        )
 
-        //then
-        Assertions.assertNotNull(responseEntity);
-        Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-        Assertions.assertEquals(MediaType.APPLICATION_JSON, responseEntity.getHeaders().getContentType());
-        Assertions.assertEquals(tasks, responseEntity.getBody());
+                );
     }
 
     @Test
-    void handleCreateNewTask_PayloadIsValid_ReturnsValidResponseEntity() {
+    void handleCreateNewTask_PayloadIsValid_ReturnsValidResponseEntity() throws Exception {
         //given
-        var details = "Третья задача";
+        var requestBuilder = MockMvcRequestBuilders.post("/api/tasks")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                         
+                          {
+                              "details": "Третья задача"
+                          }
+                          """);
 
         //when
-        var responseEntity = this.taskRestController.handleCreateNewTask(new NewTaskPayload(details),
-                UriComponentsBuilder.fromUriString("http://localhost:8082"), Locale.ENGLISH);
-
-        //then
-        Assertions.assertNotNull(responseEntity);
-        Assertions.assertEquals(HttpStatus.CREATED, responseEntity.getStatusCode());
-        Assertions.assertEquals(MediaType.APPLICATION_JSON, responseEntity.getHeaders().getContentType());
-        if(responseEntity.getBody() instanceof Task task) {
-            Assertions.assertNotNull(task.id());
-            Assertions.assertEquals(details, task.details());
-            Assertions.assertFalse(task.completed());
-
-            Assertions.assertEquals(URI.create("http://localhost:8082/api/tasks/" + task.id()),
-                    responseEntity.getHeaders().getLocation());
-
-            Mockito.verify(this.taskRepository).save(task);
-        }
-        else {
-            Assertions.assertInstanceOf(Task.class, responseEntity.getBody());
-        }
-
-        Mockito.verifyNoMoreInteractions(this.taskRepository);
+        this.mockMvc.perform(requestBuilder)
+                //then
+                .andExpectAll(
+                        MockMvcResultMatchers.status().isCreated(),
+                        MockMvcResultMatchers.header().exists(HttpHeaders.LOCATION),
+                        MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON),
+                        MockMvcResultMatchers.content().json("""
+                                [
+                                    {
+                                        "details": "Третья задача",
+                                        "completed": false
+                                    }
+                                ]
+                                """
+                        ),
+                        MockMvcResultMatchers.jsonPath("$.id").exists()
+                );
     }
 
     @Test
-    void handleCreateNewTask_PayloadInvalid_ReturnsValidResponseEntity() {
+    void handleCreateNewTask_PayloadInvalid_ReturnsInvalidResponseEntity() throws Exception {
         //given
-        var details  = "    ";
-        var locale = Locale.US;
-        var errorMessage = "Details is empty";
-
-        Mockito.doReturn(errorMessage).when(this.messageSource)
-                .getMessage("tasks.create.details.errors", new Object[0], locale);
+        var requestBuilder = MockMvcRequestBuilders.post("/api/tasks")
+                .contentType(MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.ACCEPT_LANGUAGE, "en")
+                .content("""
+                          {
+                              "details": null
+                          }
+                          """);
 
         //when
-        var responseEntity = this.taskRestController.handleCreateNewTask(new NewTaskPayload(details),
-                UriComponentsBuilder.fromUriString("http://localhost:8082"), locale);
-
-        //then
-        Assertions.assertNotNull(responseEntity);
-        Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
-        Assertions.assertEquals(MediaType.APPLICATION_JSON, responseEntity.getHeaders().getContentType());
-        Assertions.assertEquals(new ErrorsPresentation(List.of(errorMessage)), responseEntity.getBody());
-
-        Mockito.verifyNoInteractions(taskRepository);
+        this.mockMvc.perform(requestBuilder)
+                //then
+                .andExpectAll(
+                        MockMvcResultMatchers.status().isBadRequest(),
+                        MockMvcResultMatchers.header().doesNotExist(HttpHeaders.LOCATION),
+                        MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON),
+                        MockMvcResultMatchers.content().json("""
+                                [
+                                    {
+                                        "errors": ["Task detals must be set"]
+                                    }
+                                ]
+                                """, true
+                        )
+                );
     }
 }
