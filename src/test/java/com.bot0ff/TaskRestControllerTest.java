@@ -5,10 +5,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.*;
-import org.springframework.test.annotation.Rollback;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+
+import java.util.UUID;
+
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc(printOnlyOnFailure = false)
@@ -20,23 +24,24 @@ public class TaskRestControllerTest {
     @Test
     void handleGetAllTask_ReturnsValidResponseEntity() throws Exception {
         //given
-        var requestBuilder = MockMvcRequestBuilders.get("/api/tasks");
+        var requestBuilder = MockMvcRequestBuilders.get("/api/tasks")
+                .with(httpBasic("user1", "password1"));
 
         //when
         this.mockMvc.perform(requestBuilder)
                 //then
                 .andExpectAll(
-                        MockMvcResultMatchers.status().isOk(),
-                        MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON),
-                        MockMvcResultMatchers.content().json("""
+                        status().isOk(),
+                        content().contentType(MediaType.APPLICATION_JSON),
+                        content().json("""
                                 [
                                     {
-                                        "id":"5fd1a7b4-5d61-11ee-8c99-0242ac120002",
+                                        "id":"f8d2e61a-bd8b-4647-a917-828d804be519",
                                         "details":"Первая задача",
                                         "completed":false
                                     },
                                     {
-                                        "id":"6c82123c-5d61-11ee-8c99-0242ac120002",
+                                        "id":"394c1076-a771-4ad2-bc24-058088108f3d",
                                         "details":"Вторая задача",
                                         "completed":true
                                     }
@@ -51,6 +56,7 @@ public class TaskRestControllerTest {
     void handleCreateNewTask_PayloadIsValid_ReturnsValidResponseEntity() throws Exception {
         //given
         var requestBuilder = MockMvcRequestBuilders.post("/api/tasks")
+                .with(httpBasic("user2", "password2"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""
                          
@@ -63,10 +69,10 @@ public class TaskRestControllerTest {
         this.mockMvc.perform(requestBuilder)
                 //then
                 .andExpectAll(
-                        MockMvcResultMatchers.status().isCreated(),
-                        MockMvcResultMatchers.header().exists(HttpHeaders.LOCATION),
-                        MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON),
-                        MockMvcResultMatchers.content().json("""
+                        status().isCreated(),
+                        header().exists(HttpHeaders.LOCATION),
+                        content().contentType(MediaType.APPLICATION_JSON),
+                        content().json("""
                                 
                                     {
                                         "details": "Третья задача",
@@ -84,6 +90,7 @@ public class TaskRestControllerTest {
         //given
         var requestBuilder = MockMvcRequestBuilders.post("/api/tasks")
                 .contentType(MediaType.APPLICATION_JSON)
+                .with(httpBasic("user1", "password1"))
                 .content("""
                           {
                               "details": null
@@ -94,10 +101,10 @@ public class TaskRestControllerTest {
         this.mockMvc.perform(requestBuilder)
                 //then
                 .andExpectAll(
-                        MockMvcResultMatchers.status().isBadRequest(),
-                        MockMvcResultMatchers.header().doesNotExist(HttpHeaders.LOCATION),
-                        MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON),
-                        MockMvcResultMatchers.content().json("""
+                        status().isBadRequest(),
+                        header().doesNotExist(HttpHeaders.LOCATION),
+                        content().contentType(MediaType.APPLICATION_JSON),
+                        content().json("""
                                 
                                     {
                                         "errors": ["Описание задачи должно быть указано"]

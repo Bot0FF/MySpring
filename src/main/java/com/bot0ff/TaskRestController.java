@@ -26,7 +26,7 @@ public class TaskRestController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Task>> handleGetAllTasks() {
+    public ResponseEntity<List<Task>> handleGetAllTasks(ApplicationUser user) {
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(this.taskRepository.findAll());
