@@ -1,4 +1,4 @@
-package com.bot0ff;
+package com.bot0ff.authorization;
 
 import org.springframework.context.MessageSource;
 import org.springframework.http.MediaType;

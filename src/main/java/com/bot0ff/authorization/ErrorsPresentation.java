@@ -1,4 +1,4 @@
-package com.bot0ff;
+package com.bot0ff.authorization;
 
 import java.util.List;
 

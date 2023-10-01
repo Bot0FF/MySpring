@@ -1,4 +1,4 @@
-package com.bot0ff;
+package com.bot0ff.authorization;
 
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
