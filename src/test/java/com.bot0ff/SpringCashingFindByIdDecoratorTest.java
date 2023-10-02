@@ -1,8 +1,8 @@
 package com.bot0ff;
 
-import com.bot0ff.decorator_pattern.FindTaskByIdSpi;
-import com.bot0ff.decorator_pattern.SpringCashingFindByIdDecorator;
-import com.bot0ff.decorator_pattern.TaskData;
+import com.bot0ff.decorator.FindTaskByIdSpi;
+import com.bot0ff.decorator.SpringCashingFindByIdDecorator;
+import com.bot0ff.decorator.TaskData;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;

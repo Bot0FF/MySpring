@@ -1,4 +1,4 @@
-package com.bot0ff.decorator_pattern;
+package com.bot0ff.decorator;
 
 import org.springframework.cache.Cache;
 

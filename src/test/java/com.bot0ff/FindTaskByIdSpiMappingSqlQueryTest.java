@@ -1,7 +1,7 @@
 package com.bot0ff;
 
-import com.bot0ff.adapter_pattern.FindTaskByIdSpiAdapter;
-import com.bot0ff.adapter_pattern.TaskData;
+import com.bot0ff.adapter.FindTaskByIdSpiAdapter;
+import com.bot0ff.adapter.TaskData;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;

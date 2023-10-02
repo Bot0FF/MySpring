@@ -1,4 +1,4 @@
-package com.bot0ff.adapter_pattern;
+package com.bot0ff.decorator;
 
 import org.springframework.jdbc.core.SqlParameter;
 import org.springframework.jdbc.object.MappingSqlQuery;

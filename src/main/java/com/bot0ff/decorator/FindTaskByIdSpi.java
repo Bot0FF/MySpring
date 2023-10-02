@@ -1,4 +1,4 @@
-package com.bot0ff.adapter_pattern;
+package com.bot0ff.decorator;
 
 import java.util.Optional;
 import java.util.UUID;

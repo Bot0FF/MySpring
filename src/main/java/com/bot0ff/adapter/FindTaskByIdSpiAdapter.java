@@ -1,4 +1,4 @@
-package com.bot0ff.adapter_pattern;
+package com.bot0ff.adapter;
 
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations;
